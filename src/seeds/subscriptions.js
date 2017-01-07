@@ -1,6 +1,6 @@
 'use strict';
 
-var Subscription = require('./models/subscription.js');
+var Subscription = require('./../models/subscription.js');
 
 var subscriptions = [
   {
@@ -14,6 +14,7 @@ var subscriptions = [
     trialSubscription: false,
     category: "Video Streaming",
     userRating: 4.5,
+    user: "5871739e57c6462f61cea3d3"
   },
   {
     name: "DropBox",
@@ -26,6 +27,7 @@ var subscriptions = [
     trialSubscription: true,
     category: "Cloud Storage",
     userRating: null,
+    user: "5871739e57c6462f61cea3d3"
   },
   {
     name: "Spotify",
@@ -38,6 +40,7 @@ var subscriptions = [
     trialSubscription: false,
     category: "Music Streaming",
     userRating: 4.5,
+    user: "5871739e57c6462f61cea3d3"
   },
 ];
 

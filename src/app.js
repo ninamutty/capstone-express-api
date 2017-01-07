@@ -7,7 +7,9 @@ var parser = require('body-parser');
 var app = express();
 
 require('./database');
-require('./seed');
+require('./seeds/subscriptions.js');
+require('./seeds/users.js');
+
 
 app.use(parser.json());
 
