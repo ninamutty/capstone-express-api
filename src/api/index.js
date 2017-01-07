@@ -6,6 +6,9 @@ var router = express.Router();
 
 //comment out mock data because we're connecting to database
 // var todos = require('../../mock/todos.json');
+router.get('/', function(req, res) {
+  res.json({"welcome": "MY API!"})
+});
 
 //Get all subscriptions
 router.get('/subscriptions', function(req, res) {
@@ -13,9 +16,22 @@ router.get('/subscriptions', function(req, res) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
-    res.json({subscriptions: subscriptions});
+    res.status(200).json({subscriptions: subscriptions});
   });
 });
+
+//Get one subscription
+router.get('/subscriptions/:id', function(req, res) {
+  var id = req.params.id
+
+  Subscription.findOne({"_id": id}, function(err, subscription) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+    res.json({"subscription": subscription});
+  });
+});
+
 
 //Create new subscription
 router.post('/subscriptions', function(req, res) {
@@ -46,6 +62,18 @@ router.put('/subscriptions/:id', function(req, res) {
   });
 });
 
+
+//Delete a Subscription
+router.delete('/subscriptions/:id', function(req, res) {
+  var id = req.params.id
+
+  Subscription.findOneAndRemove({"_id": id}, function(err, subscription) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+    res.status(200).json({"message": "Subscription Deleted"});
+  });
+});
 
 
 module.exports = router;
