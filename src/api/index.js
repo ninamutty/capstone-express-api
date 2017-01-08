@@ -4,6 +4,8 @@ var express = require('express');
 var Subscription = require('../models/subscription.js');
 var User = require('../models/user.js');
 var router = express.Router();
+const mongoose = require('mongoose');
+
 
 
 // Need to add users to reference to for new subscriptions
@@ -86,9 +88,12 @@ router.delete('/users/:id', function(req, res) {
 /// '/subcriptions' ///
 ///////////////////////
 
-//Get all subscriptions
-router.get('/subscriptions', function(req, res) {
-  Subscription.find({}, function(err, subscriptions) {
+//Get all subscriptions for a user
+router.get('/users/:user_id/subscriptions', function(req, res) {
+  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+  console.log(user_id);
+
+  Subscription.find({"user_id": user_id}, function(err, subscriptions) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
@@ -96,11 +101,24 @@ router.get('/subscriptions', function(req, res) {
   });
 });
 
-//Get one subscription
-router.get('/subscriptions/:id', function(req, res) {
-  var id = req.params.id
 
-  Subscription.findOne({"_id": id}, function(err, subscription) {
+router.get('/subscriptions', function(req, res) {
+
+  Subscription.find({}, function(err, subscriptions) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+    res.json({"subscriptions": subscriptions});
+  });
+});
+
+
+//Get one subscription
+router.get('/users/:user_id/subscriptions/:id', function(req, res) {
+  var id = req.params.id
+  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+
+  Subscription.find().and([{"user_id": user_id}, {"_id": id}]).exec(function(err, subscription) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
@@ -108,6 +126,9 @@ router.get('/subscriptions/:id', function(req, res) {
   });
 });
 
+
+
+// Be able to creat new, edit, delete subscriptions that correspond to a user
 
 //Create new subscription
 router.post('/subscriptions', function(req, res) {

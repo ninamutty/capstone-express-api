@@ -15,7 +15,7 @@ var subscriptionsSchema = new mongoose.Schema({
   "trialSubscription": Boolean,
   "category": String,
   "userRating": Number,
-  "user": String
+  "user_id": {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
 });
 
 var model = mongoose.model("Subscription", subscriptionsSchema);
