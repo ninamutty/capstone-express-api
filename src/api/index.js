@@ -84,9 +84,9 @@ router.delete('/users/:id', function(req, res) {
 
 
 
-///////////////////////
-/// '/subcriptions' ///
-///////////////////////
+////////////////////////////////////
+/// 'user/:user_id/subcriptions' ///
+////////////////////////////////////
 
 //Get all subscriptions for a user
 router.get('/users/:user_id/subscriptions', function(req, res) {
@@ -127,12 +127,16 @@ router.get('/users/:user_id/subscriptions/:id', function(req, res) {
 });
 
 
+// todo: Be able to creat new, edit, delete subscriptions that correspond to a user
 
-// Be able to creat new, edit, delete subscriptions that correspond to a user
-
-//Create new subscription
-router.post('/subscriptions', function(req, res) {
+//Create new subscription for a user
+router.post('/users/:user_id/subscriptions', function(req, res) {
+  var user_id = req.params.user_id
   var subscription = req.body;
+  console.log(subscription);
+
+  subscription.user_id = user_id;
+
   Subscription.create(subscription, function(err, subscription) {
     if (err) {
       return res.status(500).json({err: err.message});
@@ -142,15 +146,24 @@ router.post('/subscriptions', function(req, res) {
 });
 
 
-// Update a Subscription
-router.put('/subscriptions/:id', function(req, res) {
+// Update a Subscription for a user
+router.put('/users/:user_id/subscriptions/:id', function(req, res) {
   var id = req.params.id
+  var user_id = req.params.user_id
   var subscription = req.body;
 
-  if (subscription && subscription._id !== id) {
+  var user = User.findById({"_id": user_id})
+
+
+  if (!subscription || !user) {
+    return res.status(404).json({err: "Subscription or User Not Found"});
+  } else if (subscription && subscription._id !== id) {
     return res.status(500).json({err: "Ids don't match"});
+  } else if (subscription.user_id !== user_id) {
+    return res.status(401).json({err: "Not Authorized to Edit this Subscription"})
   }
 
+  // Unique id so don't need worry about it not being the user's
   Subscription.findByIdAndUpdate(id, subscription, {new: true}, function(err, subscription) {
     if (err) {
       return res.status(500).json({err: err.message});
@@ -161,8 +174,11 @@ router.put('/subscriptions/:id', function(req, res) {
 
 
 //Delete a Subscription
-router.delete('/subscriptions/:id', function(req, res) {
+router.delete('/users/:user_id/subscriptions/:id', function(req, res) {
   var id = req.params.id
+  var user_id = req.params.user_id
+
+  //ADD IN VALIDATIONS
 
   Subscription.findOneAndRemove({"_id": id}, function(err, subscription) {
     if (err) {
