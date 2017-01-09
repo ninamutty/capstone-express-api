@@ -209,6 +209,18 @@ router.get('/users/:user_id/trials', function(req, res) {
   });
 });
 
+//Get all non-trial subscriptions for a user
+router.get('/users/:user_id/non-trials', function(req, res) {
+  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+
+  Subscription.find({"user_id": user_id, "trialSubscription": false}, function(err, subscriptions) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+    res.status(200).json({subscriptions: subscriptions});
+  });
+});
+
 
 
 module.exports = router;
