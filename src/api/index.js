@@ -93,7 +93,7 @@ router.delete('/users/:id', function(req, res) {
 //Get all subscriptions for a user
 router.get('/users/:user_id/subscriptions', function(req, res) {
   var user_id =  mongoose.Types.ObjectId(req.params.user_id);
-  console.log(user_id);
+  // console.log(user_id);
 
   Subscription.find({"user_id": user_id}, function(err, subscriptions) {
     if (err) {
@@ -189,6 +189,26 @@ router.delete('/users/:user_id/subscriptions/:id', function(req, res) {
     res.status(200).json({"message": "Subscription Deleted"});
   });
 });
+
+
+
+
+////////////////////////////////////
+/// 'user/:user_id/trials' ///
+////////////////////////////////////
+
+//Get all trial subscriptions for a user
+router.get('/users/:user_id/trials', function(req, res) {
+  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+
+  Subscription.find({"user_id": user_id, "trialSubscription": true}, function(err, subscriptions) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+    res.status(200).json({subscriptions: subscriptions});
+  });
+});
+
 
 
 module.exports = router;
