@@ -2,7 +2,6 @@
 
 var express = require('express');
 var router = require('./api/index.js');
-// var router = express.Router();
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var mongoose = require('mongoose');
@@ -27,10 +26,6 @@ mongoose.connect(config.database, function(err) {
     console.log('Failed to connect to mongodb!');
   } else {
     console.log('Successfully connected to Mongo!');
-
-    // User.findOne({}, {}, { sort: { 'created_at' : -1 } }, function(err, user) {
-    //   console.log( user );
-    // });
   }
 });
 

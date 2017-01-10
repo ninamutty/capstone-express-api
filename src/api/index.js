@@ -1,7 +1,7 @@
 'use strict';
 
 var express = require('express');
-var Subscription = require('../models/subscription.js');
+// var Subscription = require('../models/subscription.js');
 var User = require('../models/user.js');
 var router = express.Router();
 const mongoose = require('mongoose');
@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 // require('./subscriptions_path.js');
 // require('./users_path.js');
 
-// 
+//
 // router.post('/authenticate', function(req, res) {
 //   // find the user
 //   User.findOne({
@@ -68,9 +68,11 @@ const mongoose = require('mongoose');
 // });
 
 
-// ////////////////
-// /// '/users' ///
-// ////////////////
+
+
+////////////////
+/// '/users' ///
+////////////////
 
 //Get all users
 router.get('/users', function(req, res) {
@@ -146,39 +148,31 @@ router.delete('/users/:id', function(req, res) {
 ////////////////////////////////////
 
 //Get all subscriptions for a user
-router.get('/users/:user_id/subscriptions', function(req, res) {
-  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+router.get('/users/:id/subscriptions', function(req, res) {
+  var id =  req.params.id;
   // console.log(user_id);
 
-  Subscription.find({"user_id": user_id}, function(err, subscriptions) {
+  User.findOne({"_id": id}, function(err, user) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
+    var subscriptions = user.subscriptions;
     res.status(200).json({subscriptions: subscriptions});
   });
 });
 
 
-router.get('/subscriptions', function(req, res) {
 
-  Subscription.find({}, function(err, subscriptions) {
-    if (err) {
-      return res.status(500).json({message: err.message}); // 500 = internal server error
-    }
-    res.json({"subscriptions": subscriptions});
-  });
-});
-
-
-//Get one subscription
+//Get one subscription for a user
 router.get('/users/:user_id/subscriptions/:id', function(req, res) {
-  var id = req.params.id
-  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+  var sub_id = req.params.id
+  var user_id =  req.params.user_id;
 
-  Subscription.find().and([{"user_id": user_id}, {"_id": id}]).exec(function(err, subscription) {
+  User.findOne({"_id": user_id}, function(err, user) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
+    var subscription = user.subscriptions.id(sub_id)
     res.json({"subscription": subscription});
   });
 });
@@ -187,20 +181,26 @@ router.get('/users/:user_id/subscriptions/:id', function(req, res) {
 // todo: Be able to creat new, edit, delete subscriptions that correspond to a user
 
 //Create new subscription for a user
-router.post('/users/:user_id/subscriptions', function(req, res) {
-  var user_id = req.params.user_id
+router.post('/users/:id/subscriptions', function(req, res) {
+  var id = req.params.id
   var subscription = req.body;
-  console.log(subscription);
 
-  subscription.user_id = user_id;
-
-  Subscription.create(subscription, function(err, subscription) {
+  User.findOne({"_id": id}, function(err, user) {
     if (err) {
-      return res.status(500).json({err: err.message});
+      return res.status(500).json({message: err.message}); // 500 = internal server error
     }
-    res.json({'subscription': subscription, "message": 'Subscription Created'});
+    user.subscriptions.push(subscription);
+
+    var createdSubscription = user.subscriptions[user.subscriptions.length - 1]
+    user.save(function (err) {
+      if (err) {
+        return res.status(500).json({message: err.message}); // 500 = internal server error
+      }
+      res.status(200).json({subscription: createdSubscription, "message": 'Subscription Created'});
+    });
   });
 });
+
 
 
 // Update a Subscription for a user
@@ -209,25 +209,36 @@ router.put('/users/:user_id/subscriptions/:id', function(req, res) {
   var user_id = req.params.user_id
   var subscription = req.body;
 
-  var user = User.findById({"_id": user_id})
-
-
-  if (!subscription || !user) {
-    return res.status(404).json({err: "Subscription or User Not Found"});
-  } else if (subscription && subscription._id !== id) {
-    return res.status(500).json({err: "Ids don't match"});
-  } else if (subscription.user_id !== user_id) {
-    return res.status(401).json({err: "Not Authorized to Edit this Subscription"})
-  }
-
-  // Unique id so don't need worry about it not being the user's
-  Subscription.findByIdAndUpdate(id, subscription, {new: true}, function(err, subscription) {
+  User.findOne({"_id": user_id}, function(err, user) {
     if (err) {
-      return res.status(500).json({err: err.message});
+      return res.status(500).json({message: err.message}); // 500 = internal server error
     }
-    res.json({'subscription': subscription, "message": 'Subscription Updated'});
+
+    if (user.subscriptions.id(id)) {
+      var update = user.subscriptions.id(id);
+      update.name = subscription.name;
+      update.cost = subscription.cost;
+      update.nextBillingDate = subscription.nextBillingDate;
+      update.notificationDate = subscription.notificationDate;
+      update.firstBillDate = subscription.firstBillDate;
+      update.billingCycle = subscription.billingCycle;
+      update.daysBeforeBilling = subscription.daysBeforeBilling;
+      update.category = subscription.category;
+      update.userRating = subscription.userRating;
+    } else {
+      return res.status(404).json({message: err.message});
+    }
+
+    user.save(function (err) {
+      if (err) {
+        return res.status(500).json({message: err.message}); // 500 = internal server error
+      }
+      res.status(200).json({subscription: update, "message": 'Subscription Updated'});
+    });
+
   });
-});
+
+}); //end put
 
 
 //Delete a Subscription
@@ -236,12 +247,22 @@ router.delete('/users/:user_id/subscriptions/:id', function(req, res) {
   var user_id = req.params.user_id
 
   //ADD IN VALIDATIONS
-
-  Subscription.findOneAndRemove({"_id": id}, function(err, subscription) {
+  User.findOne({"_id": user_id}, function(err, user) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
-    res.status(200).json({"message": "Subscription Deleted"});
+
+    if (user.subscriptions.id(id)) {
+      var doc = user.subscriptions.id(id).remove();
+    } else {
+      return res.status(404).json({message: err.message});
+    }
+    user.save(function(err) {
+      if (err) {
+        return res.status(500).json({message: err.message}); // 500 = internal server error
+      }
+      res.status(200).json({"message": "Subscription Deleted"});
+    })
   });
 });
 
@@ -252,29 +273,125 @@ router.delete('/users/:user_id/subscriptions/:id', function(req, res) {
 /// 'user/:user_id/trials' ///
 ////////////////////////////////////
 
-//Get all trial subscriptions for a user
-router.get('/users/:user_id/trials', function(req, res) {
-  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
+//Get all trials for a user
+router.get('/users/:id/trials', function(req, res) {
+  var id =  req.params.id;
+  // console.log(user_id);
 
-  Subscription.find({"user_id": user_id, "trialSubscription": true}, function(err, subscriptions) {
+  User.findOne({"_id": id}, function(err, user) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
-    res.status(200).json({subscriptions: subscriptions});
+    var trials = user.trials;
+    res.status(200).json({trials: trials});
   });
 });
 
-//Get all non-trial subscriptions for a user
-router.get('/users/:user_id/non-trials', function(req, res) {
-  var user_id =  mongoose.Types.ObjectId(req.params.user_id);
 
-  Subscription.find({"user_id": user_id, "trialSubscription": false}, function(err, subscriptions) {
+
+//Get one trial for a user
+router.get('/users/:user_id/trials/:id', function(req, res) {
+  var sub_id = req.params.id
+  var user_id =  req.params.user_id;
+
+  User.findOne({"_id": user_id}, function(err, user) {
     if (err) {
       return res.status(500).json({message: err.message}); // 500 = internal server error
     }
-    res.status(200).json({subscriptions: subscriptions});
+    var trial = user.trials.id(sub_id)
+    res.json({"trial": trial});
   });
 });
+
+
+// todo: Be able to creat new, edit, delete trials that correspond to a user
+
+//Create new trial for a user
+router.post('/users/:id/trials', function(req, res) {
+  var id = req.params.id
+  var trial = req.body;
+
+  User.findOne({"_id": id}, function(err, user) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+    user.trials.push(trial);
+
+    var createdSubscription = user.trials[user.trials.length - 1]
+    user.save(function (err) {
+      if (err) {
+        return res.status(500).json({message: err.message}); // 500 = internal server error
+      }
+      res.status(200).json({trial: createdSubscription, "message": 'Trial Created'});
+    });
+  });
+});
+
+
+
+// Update a Subscription for a user
+router.put('/users/:user_id/trials/:id', function(req, res) {
+  var id = req.params.id
+  var user_id = req.params.user_id
+  var trial = req.body;
+
+  User.findOne({"_id": user_id}, function(err, user) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+
+    if (user.trials.id(id)) {
+      var update = user.trials.id(id);
+      update.name = trial.name;
+      update.cost = trial.cost;
+      update.nextBillingDate = trial.nextBillingDate;
+      update.notificationDate = trial.notificationDate;
+      update.firstBillDate = trial.firstBillDate;
+      update.billingCycle = trial.billingCycle;
+      update.daysBeforeBilling = trial.daysBeforeBilling;
+      update.category = trial.category;
+      update.userRating = trial.userRating;
+    } else {
+      return res.status(404).json({message: err.message});
+    }
+
+    user.save(function (err) {
+      if (err) {
+        return res.status(500).json({message: err.message}); // 500 = internal server error
+      }
+      res.status(200).json({trial: update, "message": 'Trial Updated'});
+    });
+
+  });
+
+}); //end put
+
+
+//Delete a Subscription
+router.delete('/users/:user_id/trials/:id', function(req, res) {
+  var id = req.params.id
+  var user_id = req.params.user_id
+
+  //ADD IN VALIDATIONS
+  User.findOne({"_id": user_id}, function(err, user) {
+    if (err) {
+      return res.status(500).json({message: err.message}); // 500 = internal server error
+    }
+
+    if (user.trials.id(id)) {
+      var doc = user.trials.id(id).remove();
+    } else {
+      return res.status(404).json({message: "Trial Not Found"});
+    }
+    user.save(function(err) {
+      if (err) {
+        return res.status(500).json({message: err.message}); // 500 = internal server error
+      }
+      res.status(200).json({"message": "Trial Subscription Deleted"});
+    })
+  });
+});
+
 
 
 
