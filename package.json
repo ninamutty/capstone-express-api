@@ -1,7 +1,7 @@
 {
   "name": "capstone-express-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Nina's capstone API",
   "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
