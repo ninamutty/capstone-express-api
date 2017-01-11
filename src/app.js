@@ -20,7 +20,7 @@ require('./seeds/users.js');
 var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
 
 // connect to database
-mongoose.connect(config.database, function(err) {
+mongoose.connect(config.productionDatabase, function(err) {
   if (err) {
     console.log('Failed to connect to mongodb!');
   } else {
