@@ -14,7 +14,7 @@ var cors = require('cors');
 
 var app = express();
 
-require('./seeds/users.js');
+// require('./seeds/users.js');
 
 
 var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
