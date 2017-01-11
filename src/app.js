@@ -5,7 +5,9 @@ var router = require('./api/index.js');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var mongoose = require('mongoose');
-var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var expressJWT = require('express-jwt'); // used to create, sign, and verify tokens
+
 var config = require('../config'); // get our config file
 var User   = require('./models/user'); // get our mongoose model
 var cors = require('cors');
@@ -26,7 +28,7 @@ mongoose.connect(config.database, function(err) {
   }
 });
 
-app.set('superSecret', config.secret); // secret variable
+app.use(expressJWT({secret: config.secret}).unless({path: ['/login']})); // secret variable
 
 router.get('/', function(req, res) {
   res.send('Hello and Welcome! The API is at http://localhost:' + port + '/api');
@@ -37,9 +39,30 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+
+app.post('/login', function(req, res) {
+  if(!req.body.email) {
+    return res.status(400).send('email required');
+  }
+  if(!req.body.password) {
+    return res.status(400).send('password required');
+  }
+  User.findOne({email: req.body.email}, function(err, user) {
+    if (err) throw err;
+    if (req.body.password !== user.password) {
+      res.status(401).send("Invalid Password");
+    } else {
+      var myToken = jwt.sign({email: req.body.email}, config.secret)
+      res.status(200).json(myToken);
+    }
+  })
+
+});
+
+
+
+
 app.listen(port);
 console.log('Magic happens at http://localhost:' + port);
-
-
 
 app.use('/api', router);  //first parameter is name space and second route is the router - routes will automatically be added

@@ -6,6 +6,7 @@ var users = [
   {
     name: "Nina Mutty",
     email: "nina@me.com",
+    username: "nmutty",
     password: 'password',
     subscriptions: [
       {
@@ -47,6 +48,7 @@ var users = [
   }, {
     name: "Sam Mutty",
     email: "sam@me.com",
+    username: 'sam',
     password: 'password',
     subscriptions: [
       {
@@ -65,6 +67,7 @@ var users = [
   }, {
     name: "Buck Mutty",
     email: "buck@me.com",
+    username: 'buck',
     password: 'password',
     subscriptions: [],
     trials: []
@@ -78,6 +81,7 @@ users.forEach(function(user, index) {
       var newUser = new User({
         name: user.name,
         email: user.email,
+        username: user.username,
         password: user.password,
         subscriptions: [],
         trials: []

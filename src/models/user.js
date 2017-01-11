@@ -32,6 +32,7 @@ var trialSchema = new mongoose.Schema({
 var usersSchema = new mongoose.Schema({
   "name": String,
   "email": String,
+  "username": String,
   "password": String,
   "subscriptions": [subscriptionSchema],
   "trials": [trialSchema]
