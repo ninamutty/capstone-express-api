@@ -20,7 +20,7 @@ var app = express();
 var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
 
 // connect to database
-mongoose.connect(config.productionDatabase, function(err) {
+mongoose.connect(config.db.production, function(err) {
   if (err) {
     console.log('Failed to connect to mongodb!');
   } else {
