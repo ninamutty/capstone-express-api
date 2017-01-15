@@ -25,8 +25,10 @@
     "jsonwebtoken": "^7.2.1",
     "mongoose": "4.7.6",
     "morgan": "^1.7.0",
-    "nodemon": "1.11.0",
     "password-hash-and-salt": "^0.1.4",
     "webpack": "^1.14.0"
+  },
+  "devDependencies": {
+    "nodemon": "1.11.0"
   }
 }
