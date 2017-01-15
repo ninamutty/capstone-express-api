@@ -17,10 +17,10 @@ var app = express();
 // require('./seeds/users.js');
 
 
-var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
+var port = process.env.PORT || 8080; // used to create, sign, and verify tokens
 
 // connect to database
-mongoose.connect(config.db.production, function(err) {
+mongoose.connect(config.db.development, function(err) {
   if (err) {
     console.log('Failed to connect to mongodb!');
   } else {
