@@ -1,5 +1,5 @@
 'use strict';
-
+require('dotenv').config()
 var express = require('express');
 var router = require('./api/index.js');
 var bodyParser = require('body-parser');
@@ -20,7 +20,7 @@ var app = express();
 var port = process.env.PORT || 8080; // used to create, sign, and verify tokens
 
 // connect to database
-mongoose.connect(config.db.development, function(err) {
+mongoose.connect(process.env.DB_URL, function(err) {
   if (err) {
     console.log('Failed to connect to mongodb!');
   } else {
@@ -28,7 +28,7 @@ mongoose.connect(config.db.development, function(err) {
   }
 });
 
-app.use(expressJWT({secret: config.secret}).unless({path: ['/login']})); // secret variable
+app.use(expressJWT({secret: process.env.SECRET}).unless({path: ['/login']})); // secret variable
 
 router.get('/', function(req, res) {
   res.send('Hello and Welcome! The API is at http://localhost:' + port + '/api');
@@ -52,7 +52,7 @@ app.post('/login', function(req, res) {
     if (req.body.password !== user.password) {
       res.status(401).send("Invalid Password");
     } else {
-      var myToken = jwt.sign({email: req.body.email}, config.secret)
+      var myToken = jwt.sign({email: req.body.email}, process.env.SECRET)
       res.status(200).json(myToken);
     }
   })
