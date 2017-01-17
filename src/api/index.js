@@ -1,47 +1,9 @@
 'use strict';
 
 var express = require('express');
-// var Subscription = require('../models/subscription.js');
 var User = require('../models/user.js');
 var router = express.Router();
 const mongoose = require('mongoose');
-// var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-// var config = require('../../config'); // get our config file
-
-
-
-// require('./subscriptions_path.js');
-// require('./users_path.js');
-
-
-
-// route middleware to verify a token
-// router.use(function(req, res, next) {
-//   // check header or url parameters or post parameters for token
-//   var token = req.body.token || req.query.token || req.headers['x-access-token'];
-//   // decode token
-//   if (token) {
-//     // verifies secret and checks exp
-//     jwt.verify(token, app.get('superSecret'), function(err, decoded) {
-//       if (err) {
-//         return res.json({ success: false, message: 'Failed to authenticate token.' });
-//       } else {
-//         // if everything is good, save to request for use in other routes
-//         req.decoded = decoded;
-//         next();
-//       }
-//     });
-//   } else {
-//     // if there is no token
-//     // return an error
-//     return res.status(403).send({
-//         success: false,
-//         message: 'No token provided.'
-//     });
-//   }
-// });
-
-
 
 
 ////////////////
@@ -303,7 +265,7 @@ router.post('/users/:id/trials', function(req, res) {
 
 
 
-// Update a Subscription for a user
+// Update a Trial for a user
 router.put('/users/:user_id/trials/:id', function(req, res) {
   var id = req.params.id
   var user_id = req.params.user_id
@@ -341,7 +303,7 @@ router.put('/users/:user_id/trials/:id', function(req, res) {
 }); //end put
 
 
-//Delete a Subscription
+//Delete a Trial
 router.delete('/users/:user_id/trials/:id', function(req, res) {
   var id = req.params.id
   var user_id = req.params.user_id

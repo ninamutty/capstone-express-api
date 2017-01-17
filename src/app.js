@@ -7,13 +7,17 @@ var morgan = require('morgan');
 var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var expressJWT = require('express-jwt'); // used to create, sign, and verify tokens
-
+var unless = require('express-unless');
 var User   = require('./models/user'); // get our mongoose model
 var cors = require('cors');
+var bcrypt = require('bcrypt');
+var salt = bcrypt.genSaltSync(10);
+
+expressJWT.unless = unless;
 
 var app = express();
 
-// require('./seeds/users.js');
+require('./seeds/users.js');
 
 
 var port = process.env.PORT || 8080; // used to create, sign, and verify tokens
@@ -27,8 +31,9 @@ mongoose.connect(process.env.DB_URL, function(err) {
   }
 });
 
-app.use(expressJWT({secret: process.env.SECRET}).unless({path: ['/login']})); // secret variable
+app.use(expressJWT({secret: process.env.SECRET}).unless({path: ['/login', '/api/users']})); // secret variable
 
+// , method: 'POST'
 router.get('/', function(req, res) {
   res.send('Hello and Welcome! The API is at http://localhost:' + port + '/api');
 });
@@ -55,8 +60,8 @@ app.post('/login', function(req, res) {
       res.status(200).json(myToken);
     }
   })
-
 });
+
 
 
 

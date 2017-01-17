@@ -1,5 +1,4 @@
 'use strict';
-
 var User = require('./../models/user.js');
 
 var users = [
