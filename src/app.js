@@ -10,8 +10,6 @@ var expressJWT = require('express-jwt'); // used to create, sign, and verify tok
 var unless = require('express-unless');
 var User   = require('./models/user'); // get our mongoose model
 var cors = require('cors');
-var bcrypt = require('bcrypt');
-var salt = bcrypt.genSaltSync(10);
 
 expressJWT.unless = unless;
 
