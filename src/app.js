@@ -15,7 +15,7 @@ expressJWT.unless = unless;
 
 var app = express();
 
-require('./seeds/users.js');
+// require('./seeds/users.js');
 
 
 var port = process.env.PORT || 8080; // used to create, sign, and verify tokens
@@ -29,7 +29,7 @@ mongoose.connect(process.env.DB_URL, function(err) {
   }
 });
 
-app.use(expressJWT({secret: process.env.SECRET}).unless({path: ['/login', '/api/users']})); // secret variable
+// app.use(expressJWT({secret: process.env.SECRET}).unless({path: ['/login', '/api/users']})); // secret variable
 
 // , method: 'POST'
 router.get('/', function(req, res) {
@@ -38,6 +38,21 @@ router.get('/', function(req, res) {
 
 app.use(morgan('dev'));
 app.use(cors());
+
+app.use(function (req, res, next) {
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', 'https://ninamutty.github.io/subscription-tracker-deployment, http://localhost:3000');
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    // Pass to next layer of middleware
+    next();
+});
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -54,7 +69,7 @@ app.post('/login', function(req, res) {
     if (req.body.password !== user.password) {
       res.status(401).send("Invalid Password");
     } else {
-      var myToken = jwt.sign({email: req.body.email}, process.env.SECRET)
+      var myToken = jwt.sign({email: req.body.email, id: user._id}, process.env.SECRET)
       res.status(200).json(myToken);
     }
   })
